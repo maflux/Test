@@ -1,0 +1,73 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package by.grizzly.test.abramian.command;
+
+import by.grizzly.test.abramian.dao.ReportDAOImpl;
+import by.grizzly.test.abramian.dao.iReportDAO;
+import by.grizzly.test.abramian.model.Report;
+import static by.grizzly.test.abramian.util.ImplConfig.INDEX;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.List;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import org.apache.log4j.Logger;
+
+/**
+ *
+ * @author Abramian Roland Arturovich
+ */
+public class ServiceLastCalendarYear implements Command {
+
+    public static final Logger LOGGER = Logger.getLogger(ServiceLastCalendarYear.class.getName());
+
+    @Override
+    public String execute(HttpServletRequest request, HttpServletResponse response) {
+
+	LOGGER.info("Executing in ServiceLastCalendarYear.");
+
+	Calendar currentDate = new GregorianCalendar();
+
+	//Setting time limits
+	int oneYears = 1;
+	int startYaer = currentDate.get(Calendar.YEAR);
+	int startMonth = 0;
+	int startDay = 0;
+	int endYear = startYaer;
+	int endMonth = startMonth;
+	int endDay = 1;
+
+	//Setting the date for the request
+	Calendar startDate = new GregorianCalendar(
+		startYaer - oneYears,
+		startMonth,
+		startDay);
+
+	Calendar endDate = new GregorianCalendar(
+		endYear,
+		endMonth,
+		endDay);
+
+	iReportDAO reportDAO = new ReportDAOImpl();
+
+	List<Report> listReports = new ArrayList<>();
+
+	try {
+	    listReports = reportDAO.findByTime(
+		    new Timestamp(startDate.getTimeInMillis()),
+		    new Timestamp(endDate.getTimeInMillis()));
+	    request.setAttribute("listReports", listReports);
+	} catch (SQLException ex) {
+	    LOGGER.error(ex);
+	}
+
+	return INDEX;
+    }
+
+}
